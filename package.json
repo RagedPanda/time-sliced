@@ -1,0 +1,47 @@
+{
+	"name": "time-sliced",
+	"version": "0.1.0",
+	"description": "Run long loops without freezing the event loop: yield on a time budget, not every N items",
+	"license": "MIT",
+	"author": "Ankur Dubey (https://github.com/RagedPanda)",
+	"repository": "github:RagedPanda/time-sliced",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/esm/index.d.ts",
+			"default": "./dist/esm/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"sideEffects": false,
+	"engines": {
+		"node": ">=22"
+	},
+	"scripts": {
+		"build": "node -e \"fs.rmSync('dist', {recursive: true, force: true})\" && tsc -p tsconfig.esm.json",
+		"typecheck": "tsc --noEmit",
+		"test": "node --test \"test/**/*.test.ts\"",
+		"prepublishOnly": "npm run typecheck && npm test && npm run build"
+	},
+	"keywords": [
+		"event-loop",
+		"yield",
+		"time-slicing",
+		"scheduler",
+		"non-blocking",
+		"responsive",
+		"freeze",
+		"jank",
+		"long-task",
+		"setimmediate",
+		"electron",
+		"promise",
+		"async"
+	],
+	"devDependencies": {
+		"@types/node": "^26.6.5",
+		"typescript": "^7.0.2"
+	}
+}
