@@ -13,6 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `createTimeSlicer` for loops that don't fit a map, such as `while` loops, tree walks and nested loops.
 - `yieldToEventLoop`, which yields with the best method the runtime has: `scheduler.yield()`, then `setImmediate`, then `MessageChannel`, then `setTimeout`.
 - `AbortSignal` support to stop a loop early.
-- TypeScript types. Runs in Node.js 22+, Bun, Deno, browsers and Electron.
+- ESM and CommonJS builds, each with TypeScript types, so both `import` and `require` work. Runs in Node.js 22+, Bun, Deno, browsers and Electron.
 
 [unreleased]: https://github.com/RagedPanda/time-sliced/commits/main

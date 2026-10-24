@@ -4,12 +4,23 @@
 	"description": "Run long loops without freezing the event loop: yield on a time budget, not every N items",
 	"license": "MIT",
 	"author": "Ankur Dubey (https://github.com/RagedPanda)",
-	"repository": "github:RagedPanda/time-sliced",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/RagedPanda/time-sliced.git"
+	},
 	"type": "module",
+	"main": "./dist/cjs/index.js",
+	"types": "./dist/cjs/index.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/esm/index.d.ts",
-			"default": "./dist/esm/index.js"
+			"import": {
+				"types": "./dist/esm/index.d.ts",
+				"default": "./dist/esm/index.js"
+			},
+			"require": {
+				"types": "./dist/cjs/index.d.ts",
+				"default": "./dist/cjs/index.js"
+			}
 		}
 	},
 	"files": [
@@ -20,7 +31,7 @@
 		"node": ">=22"
 	},
 	"scripts": {
-		"build": "node -e \"fs.rmSync('dist', {recursive: true, force: true})\" && tsc -p tsconfig.esm.json",
+		"build": "node -e \"fs.rmSync('dist', {recursive: true, force: true})\" && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/mark-cjs.ts",
 		"typecheck": "tsc --noEmit",
 		"test": "node --test \"test/**/*.test.ts\"",
 		"bench": "node bench/event-loop-lag.ts",

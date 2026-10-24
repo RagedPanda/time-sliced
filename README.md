@@ -27,7 +27,7 @@ await timeSlicedForEach(rows, processRow);
 npm install time-sliced
 ```
 
-No dependencies, with TypeScript types. Runs in Node.js 22+, Bun, Deno, browsers and Electron (main and renderer).
+No dependencies. Ships ESM and CommonJS with types for both, so `import` and `require` both work. Runs in Node.js 22+, Bun, Deno, browsers and Electron (main and renderer).
 
 ## Benchmark
 
