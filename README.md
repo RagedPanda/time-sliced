@@ -29,6 +29,18 @@ npm install time-sliced
 
 No dependencies, with TypeScript types. Runs in Node.js 22+, Bun, Deno, browsers and Electron (main and renderer).
 
+## Benchmark
+
+10,000 rows. Most take 0.02 ms, but a run of 1,000 rows in the middle takes 0.5 ms each. A 1 ms heartbeat timer measures how long the event loop is blocked (median of 5 runs, Node.js 24, Apple Silicon):
+
+| Strategy | Total time | Worst stall |
+|---|---:|---:|
+| No yielding | 681 ms | 681 ms |
+| Yield every 500 rows | 682 ms | 250 ms |
+| **time-sliced** (8 ms budget) | **723 ms** | **14 ms** |
+
+Run it yourself with `npm run bench`.
+
 ## Usage
 
 ### Map or iterate

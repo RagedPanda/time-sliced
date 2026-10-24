@@ -23,6 +23,7 @@
 		"build": "node -e \"fs.rmSync('dist', {recursive: true, force: true})\" && tsc -p tsconfig.esm.json",
 		"typecheck": "tsc --noEmit",
 		"test": "node --test \"test/**/*.test.ts\"",
+		"bench": "node bench/event-loop-lag.ts",
 		"prepublishOnly": "npm run typecheck && npm test && npm run build"
 	},
 	"keywords": [
