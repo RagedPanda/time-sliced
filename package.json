@@ -34,7 +34,7 @@
 		"build": "node -e \"fs.rmSync('dist', {recursive: true, force: true})\" && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node scripts/mark-cjs.ts",
 		"typecheck": "tsc --noEmit",
 		"test": "node --test \"test/**/*.test.ts\"",
-		"bench": "node bench/event-loop-lag.ts",
+		"bench": "node bench/index.ts",
 		"prepublishOnly": "npm run typecheck && npm test && npm run build"
 	},
 	"keywords": [
@@ -53,7 +53,9 @@
 		"async"
 	],
 	"devDependencies": {
+		"@types/async": "3.2.25",
 		"@types/node": "^26.6.5",
+		"async": "3.2.6",
 		"typescript": "^7.0.2"
 	}
 }

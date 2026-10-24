@@ -31,13 +31,24 @@ No dependencies. Ships ESM and CommonJS with types for both, so `import` and `re
 
 ## Benchmark
 
-10,000 rows. Most take 0.02 ms, but a run of 1,000 rows in the middle takes 0.5 ms each. A 1 ms heartbeat timer measures how long the event loop is blocked (median of 5 runs, Node.js 24, Apple Silicon):
+One job, run with each way people usually try to keep Node.js responsive: 20,000 rows at 0.02 ms each, with a run of 1,000 heavy rows at 0.5 ms in the middle. A 1 ms heartbeat timer measures the longest time the event loop was frozen. Median of 3 runs, Node.js 24.17, Apple M5:
 
-| Strategy | Total time | Worst stall |
-|---|---:|---:|
-| No yielding | 681 ms | 681 ms |
-| Yield every 500 rows | 682 ms | 250 ms |
-| **time-sliced** (8 ms budget) | **723 ms** | **14 ms** |
+| Strategy | Total time | Longest freeze | Result |
+|---|---:|---:|---|
+| Plain loop | 897 ms | 897 ms | freezes |
+| `await` every row | 887 ms | 887 ms | freezes |
+| [async](https://www.npmjs.com/package/async) `eachSeries` | 882 ms | 882 ms | freezes |
+| `setTimeout(0)` every row | 24.6 s | 16 ms | responsive, 27.4x slower |
+| `setImmediate` every row | 1286 ms | 6 ms | responsive, 1.4x slower |
+| `setImmediate` every 500 rows | 908 ms | 254 ms | freezes |
+| **time-sliced** | **921 ms** | **11 ms** | **responsive and fast** |
+
+What the numbers show:
+
+- **`await` and `async.eachSeries` don't help.** Awaiting a promise that is already resolved only runs microtasks. Timers, I/O and rendering still wait for the whole loop.
+- **Yielding after every row works, but you pay for every yield.** `setImmediate` costs about 15 µs per yield, 40% extra here. `setTimeout(0)` costs over 1 ms per yield (Node.js clamps it to 1 ms, browsers to 4 ms once nested), so the job takes 27 times as long.
+- **Yielding every N rows is fast until the rows get slow.** 500 cheap rows take 10 ms, but 500 heavy rows take 250 ms, and that's the freeze users see.
+- **time-sliced yields once 8 ms have passed.** It yields often while rows are slow and rarely while they're cheap. The job takes about the same time as the plain loop, and the event loop is never frozen for much longer than the budget.
 
 Run it yourself with `npm run bench`.
 
