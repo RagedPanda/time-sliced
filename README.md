@@ -27,7 +27,24 @@ await timeSlicedForEach(rows, processRow);
 npm install time-sliced
 ```
 
-No dependencies. Ships ESM and CommonJS with types for both, so `import` and `require` both work. Runs in Node.js 22+, Bun, Deno, browsers and Electron (main and renderer).
+No dependencies. Runs in Node.js 22+, Bun, Deno, browsers and Electron (main and renderer).
+
+It ships ESM and CommonJS, with TypeScript types for both:
+
+```js
+// ES modules
+import {timeSlicedMap, timeSlicedForEach, createTimeSlicer} from 'time-sliced';
+```
+
+```js
+// CommonJS
+const {timeSlicedMap, timeSlicedForEach, createTimeSlicer} = require('time-sliced');
+```
+
+```ts
+// TypeScript: the option and slicer types are exported too
+import {timeSlicedForEach, type TimeSliceOptions} from 'time-sliced';
+```
 
 ## Benchmark
 
@@ -95,6 +112,128 @@ await timeSlicedForEach(rows, processRow, {signal: controller.signal});
 ```
 
 The signal is checked before the loop starts and every time it yields. An aborted loop rejects with the signal's reason.
+
+## Examples
+
+### Keep a server answering while it imports a file
+
+```js
+app.post('/import', async (request, response) => {
+	const rows = parseCsv(request.body);
+	// Health checks and other API calls keep getting answered during a 50,000-row import.
+	const records = await timeSlicedMap(rows, row => toRecord(row));
+	await database.insertMany(records);
+	response.json({imported: records.length});
+});
+```
+
+On a server, nothing has to render at 60 fps, so a bigger budget means fewer yields: `{budgetMs: 25}` still keeps every other request waiting no more than about 25 ms.
+
+### Index a mailbox in Electron's main process without the beachball
+
+A busy main process freezes every window. Report progress only when the slicer yields, so the IPC traffic stays small:
+
+```js
+const {ipcMain} = require('electron');
+const {createTimeSlicer} = require('time-sliced');
+
+ipcMain.handle('index-mailbox', async (event, messages) => {
+	const slicer = createTimeSlicer();
+	for (const [index, message] of messages.entries()) {
+		searchIndex.add(message);
+		if (slicer.isSpent()) {
+			event.sender.send('index-progress', index / messages.length);
+			await slicer.yield();
+		}
+	}
+});
+```
+
+### Search as the user types, cancelling the previous search
+
+```js
+import {timeSlicedForEach} from 'time-sliced';
+
+let controller;
+
+searchInput.addEventListener('input', async () => {
+	controller?.abort();
+	controller = new AbortController();
+	const query = searchInput.value.toLowerCase();
+	const matches = [];
+
+	try {
+		await timeSlicedForEach(notes, note => {
+			if (note.text.toLowerCase().includes(query)) {
+				matches.push(note);
+			}
+		}, {signal: controller.signal});
+		renderResults(matches);
+	} catch (error) {
+		if (error.name !== 'AbortError') {
+			throw error;
+		}
+	}
+});
+```
+
+Typing stays smooth, because each keystroke gets handled within one slice. An older search stops at its next yield instead of finishing work nobody will see.
+
+### Keep a CLI spinner moving
+
+Spinners and progress bars animate on timers, so a loop that never yields freezes them:
+
+```js
+import ora from 'ora';
+import {timeSlicedForEach} from 'time-sliced';
+
+const spinner = ora('Hashing files').start();
+await timeSlicedForEach(fileContents, content => {
+	hashes.push(hash(content));
+});
+spinner.succeed();
+```
+
+### Walk a tree
+
+A slicer works anywhere you can put an `if`, including recursion:
+
+```js
+import {createTimeSlicer} from 'time-sliced';
+
+const slicer = createTimeSlicer();
+
+const countFiles = async node => {
+	let count = node.isFile ? 1 : 0;
+	for (const child of node.children ?? []) {
+		count += await countFiles(child);
+	}
+
+	if (slicer.isSpent()) {
+		await slicer.yield();
+	}
+
+	return count;
+};
+```
+
+### Test without real timers
+
+Pass a fake clock and yield function to check how often your code yields:
+
+```js
+let nowMs = 0;
+let yields = 0;
+
+await timeSlicedForEach(rows, () => {
+	nowMs += 2; // Each row "takes" 2 ms.
+}, {
+	now: () => nowMs,
+	yieldToEventLoop: async () => {
+		yields += 1;
+	},
+});
+```
 
 ## API
 
