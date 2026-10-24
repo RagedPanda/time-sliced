@@ -1,5 +1,14 @@
 # time-sliced
 
+[![npm version](https://img.shields.io/npm/v/time-sliced)](https://www.npmjs.com/package/time-sliced)
+[![CI](https://github.com/RagedPanda/time-sliced/actions/workflows/ci.yml/badge.svg)](https://github.com/RagedPanda/time-sliced/actions/workflows/ci.yml)
+[![coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/RagedPanda/time-sliced/actions/workflows/ci.yml)
+[![npm downloads](https://img.shields.io/npm/dm/time-sliced)](https://www.npmjs.com/package/time-sliced)
+[![bundle size](https://img.shields.io/bundlejs/size/time-sliced)](https://bundlejs.com/?q=time-sliced)
+[![types](https://img.shields.io/npm/types/time-sliced)](https://www.npmjs.com/package/time-sliced)
+[![node](https://img.shields.io/node/v/time-sliced)](https://nodejs.org)
+[![license](https://img.shields.io/npm/l/time-sliced)](LICENSE)
+
 > Run long loops without freezing the event loop: yield on a **time budget**, not every N items
 
 The usual fix for a loop that freezes the UI or stalls a server looks like this:
