@@ -1,6 +1,6 @@
 {
 	"name": "time-sliced",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Run long loops without freezing the event loop: yield on a time budget, not every N items",
 	"license": "MIT",
 	"author": "Ankur Dubey (https://github.com/RagedPanda)",
